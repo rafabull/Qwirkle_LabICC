@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char types[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
+const int colors[6] = {1, 2, 3, 4, 5, 6};
+
 void freeBoard(int** board, int lines){
     int i;
     for(i = 0; i < lines; i++){
@@ -29,14 +32,58 @@ int** makeBoard(){
     }
 }
 
-void printBoard(int **board, int lins, int cols){
-    int l,c;
+void printBoard(int **board, int lins, int cols, int cLin, int cCol){
+    int l,c, ty, cor;
     for(l = 0; l < lins; l++){
+        //imprimir a numeração das colunas
+        if (l == 0){
+            printf("     ");
+            for(c = 0; c < cols; c++){
+                //Corrigir alinhamento
+                if((c-cCol >= 0) && (c-cCol < 10))
+                    printf("   %d ", c-cCol);    
+                else{
+                    if (c-cLin > -10)
+                        printf("  %d ", c-cCol);
+                    else
+                        printf(" %d ", c-cCol);
+                }
+            }
+            printf("\n");
+
+        }
+
+        printf("     -"); //para a coluna indice
+        for(c = 0; c < cols; c++)
+            printf("-----");    //para as demais colunas
+        printf("\n");
+
         for(c = 0; c < cols; c++){
-            printf(" %d ", board[l][c]);
+            if (c == 0){
+                //Corrigir alinhamento
+                if((l-cLin >= 0) && (l-cLin < 10))
+                    printf("   %d |", l-cLin);    
+                else{
+                    if (l-cLin > -10)
+                        printf("  %d |", l-cLin);
+                    else
+                        printf(" %d |", l-cLin);
+                }
+            }
+            if (board[l][c]  != -1){
+                ty = board[l][c] / 10;
+                cor = board[l][c] - ty*10;
+                printf(" %c%d |", types[ty-1], colors[cor-1]);
+            }else{
+                printf("    |");
+            }
         }
         printf("\n");
     }
+    printf("     -"); //para a coluna indice
+    for(c = 0; c < cols; c++)
+        printf("-----");    //para as demais colunas
+    printf("\n\n");
 }
 
 int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
@@ -96,14 +143,12 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
 
     for(l = 0; l < nLin; l++){
         for(c = 0; c < nCol; c++){
-            if((l >= revL) && (c >= revC) && (l <= *lin) && (c <= *col)){
+            if((l >= revL) && (c >= revC) && (l < *lin + revL) && (c < *col + revC)){
                 board[l][c] = auxboard[l-revL][c-revC]; //inserindo valores que já existiam
             }else{
                 board[l][c] = -1;   //marcando novas posições vazias
             }
-            printf(" %d", board[l][c]);
         }
-        printf("\n");
     }
     *lin = nLin;
     *col = nCol;
@@ -116,18 +161,17 @@ int main(){
     int boardCol = 1;
     int centerL = 0, centerC = 0;
     int **board;
+    int i = 0;
 
     board = makeBoard();
-    printBoard(board, boardLine, boardCol);
+    printBoard(board, boardLine, boardCol, centerL, centerC);
     board[0][0] = 11;
-    printf("%d %d\n", boardCol, boardLine);
-
     board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
-    board[0][0] = 12;
+    printBoard(board, boardLine, boardCol, centerL, centerC);
+    
+    board[2][2] = 22;
     board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
-
-    printf("%d %d\n", boardCol, boardLine);
-    printBoard(board, boardLine, boardCol);
+    printBoard(board, boardLine, boardCol, centerL, centerC);  
 
     freeBoard(board, boardLine);
     return 0;
