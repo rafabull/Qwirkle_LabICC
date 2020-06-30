@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 const char cCodes[6][9] = {"\e[0;31m", "\e[0;32m", "\e[0;33m", "\e[0;34m", "\e[0;35m", "\e[0;36m"};
 const char rColor[9] = "\033[0m";
@@ -160,22 +161,158 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
     return board;
 }
 
-void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC){
-    int i, p = 0;
+int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols){
+    int response = 1;
+    int i, dirL = 0, dirC = 0;
+    //Verificando se a linha é valida
+    if((centerL + l < 0) || (centerL + l >= lins)){
+        return 0;
+    }
+    //verificando se a coluna é valida
+    if((centerC + c < 0) || (centerC + c >= cols)){
+        return 0;
+    }
+    //verfcando se a posição está vazia
+    if(board[centerL + l][centerC + c] != -1){
+        return 0;
+    }
+    //verificando se existe uma peça semelhante a volta e não conflita com as demais
+    int side, elL = -1, elC = -1;
+    if(centerL + l - 1 >= 0){
+        puts("1");
+        side = board[centerL + l - 1][centerC + c];
+        if(side != -1){
+            if(side/10 == pc/10){
+                elL = 0 ;    //compatvel com o tipo
+                dirL = -1;
+            }
+            else{
+                if(side - (side/10)*10 == pc - (pc/10)*10){
+                    elL = 1;    //compativel com a cor
+                    dirL = -1;
+                }
+                else
+                    return 0;
+            }
+        }
+    }
+    if(centerL + l + 1 < lins){
+        side = board[centerL + l + 1][centerC + c];
+        if(side != -1){
+            if(side/10 == pc/10){
+                elL = 0 ;    //compatvel com o tipo
+                dirL = 1;
+            }
+            else{
+                if(side - (side/10)*10 == pc - (pc/10)*10){
+                    elL = 1;    //compativel com a cor
+                    dirL = 1;
+                }
+                else
+                    return 0;
+            }
+        }
+    }
+    if(centerC + c - 1 >= 0){
+        side = board[centerL + l][centerC + c - 1];
+        if(side != -1){
+            if(side/10 == pc/10){
+                elC = 0 ;    //compatvel com o tipo
+                dirC = -1;
+            }
+            else{
+                if(side - (side/10)*10 == pc - (pc/10)*10){
+                    elC = 1;    //compativel com a cor
+                    dirC = -1;
+                }
+                else
+                    return 0;
+            }
+        }
+    }
+    if(centerC + c + 1 < cols){
+        side = board[centerL + l][centerC + c + 1];
+        if(side != -1){
+            if(side/10 == pc/10){
+                elC = 0 ;    //compatvel com o tipo
+                dirC = 1;
+            }
+            else{
+                if(side - (side/10)*10 == pc - (pc/10)*10){
+                    elC = 1;    //compativel com a cor
+                    dirC = 1;
+                }
+                else
+                    return 0;
+            }
+        }
+    }
+
+    //verificando se existe uma peça igual no grupo e se é compativel com td grupo
+    int li = centerL + l, co = centerC + c;
+    if(dirL != 0){
+        while ((li + dirL >= 0)&&(li + dirL < lins)){
+            li += dirL;
+            side = board[li][co];
+            if(side == -1)
+                break;
+            else{
+                if (side == pc)
+                    return 0;
+                if ((elL == 0) && (side/10 != pc/10))
+                    return 0;
+                if ((elL == 1) && (side - (side/10)*10 != pc - (pc/10)*10))
+                    return 0;
+            }
+        }
+    }
+    li = centerL + l, co = centerC + c;
+    if(dirC != 0){
+        while ((co + dirC >= 0)&&(co + dirC < cols)){
+            co += dirC;
+            side = board[li][co];
+            if(side == -1)
+                break;
+            else{
+                if (side == pc)
+                    return 0;
+                if ((elC == 0) && (side/10 != pc/10))
+                    return 0;
+                if ((elC == 1) && (side - (side/10)*10 != pc - (pc/10)*10))
+                    return 0;
+            }
+        }
+    }
+
+    return response;
+}
+
+void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC, int lins, int cols){
+    int i, p = 0, val = 0;
+    pc[0] = toupper(pc[0]);
 
     for(i = 0; i < 6; i++){
         //Codificando a peça
         if(pc[0] == types[i]){
             p += (i+1)*10;
+            val += 1;
         }
         if(pc[1] == colors[i]){
             p += i+1;
+            val += 1;
         }
     }
-    //Futuras verificações
 
-    //inserindo no tabuleiro
-    board[centerL + l][centerC + c] = p;
+    if(val == 2){
+        if(validateMove(board, p, l, c, centerL, centerC, lins, cols)){
+            //inserindo no tabuleiro
+            board[centerL + l][centerC + c] = p;
+        }else{
+            printf("Jogada invalida\n");
+        }
+    }else{
+        printf("Peca invalida\n");
+    }
 }
 
 int main(){
@@ -208,7 +345,7 @@ int main(){
         if(!strcmp(op[0], "jogar")){
             l = atoi(op[2]);
             c = atoi(op[3]);
-            makeMove(board, op[1], l, c, centerL, centerC);
+            makeMove(board, op[1], l, c, centerL, centerC, boardLine, boardCol);
             board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
             printBoard(board, boardLine, boardCol, centerL, centerC);
         }else{
