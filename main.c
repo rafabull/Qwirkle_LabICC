@@ -3,7 +3,7 @@
 #include <string.h>
 
 const char types[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
-const int colors[6] = {1, 2, 3, 4, 5, 6};
+const char colors[6] = {'1', '2', '3', '4', '5', '6'};
 
 void freeBoard(int** board, int lines){
     int i;
@@ -41,7 +41,7 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
             for(c = 0; c < cols; c++){
                 //Corrigir alinhamento
                 if((c-cCol >= 0) && (c-cCol < 10))
-                    printf("   %d ", c-cCol);    
+                    printf("   %d ", c-cCol);
                 else{
                     if (c-cLin > -10)
                         printf("  %d ", c-cCol);
@@ -73,7 +73,7 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
             if (board[l][c]  != -1){
                 ty = board[l][c] / 10;
                 cor = board[l][c] - ty*10;
-                printf(" %c%d |", types[ty-1], colors[cor-1]);
+                printf(" %c%c |", types[ty-1], colors[cor-1]);
             }else{
                 printf("    |");
             }
@@ -156,22 +156,62 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
     return board;
 }
 
+void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC){
+    int i, p = 0;
+
+    for(i = 0; i < 6; i++){
+        //Codificando a peça
+        if(pc[0] == types[i]){
+            p += (i+1)*10;
+        }
+        if(pc[1] == colors[i]){
+            p += i+1;
+        }
+    }
+    //Futuras verificações
+
+    //inserindo no tabuleiro
+    board[centerL + l][centerC + c] = p;
+}
+
 int main(){
     int boardLine = 1;
     int boardCol = 1;
     int centerL = 0, centerC = 0;
     int **board;
-    int i = 0;
+    int i = 0, cont = 1;
 
     board = makeBoard();
     printBoard(board, boardLine, boardCol, centerL, centerC);
-    board[0][0] = 11;
-    board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
-    printBoard(board, boardLine, boardCol, centerL, centerC);
-    
-    board[2][2] = 22;
-    board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
-    printBoard(board, boardLine, boardCol, centerL, centerC);  
+
+    while (cont){
+
+        char op[7][7];
+        char str[60];
+        int l, c;
+
+        gets(str);
+
+        char * token = strtok(str, " ");
+
+        i = 0;
+        while( token != NULL ) {
+            strcpy(op[i], token);
+            token = strtok(NULL, " ");
+            i++;
+        }
+
+        if(!strcmp(op[0], "jogar")){
+            l = atoi(op[2]);
+            c = atoi(op[3]);
+            makeMove(board, op[1], l, c, centerL, centerC);
+            board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
+            printBoard(board, boardLine, boardCol, centerL, centerC);
+        }else{
+            if(!strcmp(op[0], "sair"))
+                cont = 0;
+        }
+    }
 
     freeBoard(board, boardLine);
     return 0;
