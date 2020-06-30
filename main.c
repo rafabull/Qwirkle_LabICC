@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char cCodes[6][9] = {"\e[0;31m", "\e[0;32m", "\e[0;33m", "\e[0;34m", "\e[0;35m", "\e[0;36m"};
+const char rColor[9] = "\033[0m";
+
 const char types[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
 const char colors[6] = {'1', '2', '3', '4', '5', '6'};
+
 
 void freeBoard(int** board, int lines){
     int i;
@@ -62,7 +66,7 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
             if (c == 0){
                 //Corrigir alinhamento
                 if((l-cLin >= 0) && (l-cLin < 10))
-                    printf("   %d |", l-cLin);    
+                    printf("   %d |", l-cLin);
                 else{
                     if (l-cLin > -10)
                         printf("  %d |", l-cLin);
@@ -73,7 +77,7 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
             if (board[l][c]  != -1){
                 ty = board[l][c] / 10;
                 cor = board[l][c] - ty*10;
-                printf(" %c%c |", types[ty-1], colors[cor-1]);
+                printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);
             }else{
                 printf("    |");
             }
