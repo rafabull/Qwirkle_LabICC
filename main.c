@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+//#include <ctype.h>
+#include <time.h> 
 
 const char cCodes[6][9] = {"\e[0;31m", "\e[0;32m", "\e[0;33m", "\e[0;34m", "\e[0;35m", "\e[0;36m"};
 const char rColor[9] = "\033[0m";
@@ -315,15 +316,87 @@ void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC, int
     }
 }
 
+int* makePile(){
+    int *vet = (int*) malloc(sizeof(int)*108);
+    int i = 6, e = 6, cont;
+    for(cont = 0; cont < 108; cont++){
+        if (e < 5){
+            e++;
+        }else{
+            e = 0;
+            i++;
+        }
+        if(i > 5){
+            i = 0;
+        }
+        vet[cont] = (i+1)*10 + e+1;
+    }
+    return vet;
+}
+
+int getPiece(int *pile){
+    srand(time(0));
+    int pos = rand() % 108;
+    while(pile[pos] == -1){
+        if (pos >= 108){
+            pos = 0;
+        }else{
+            pos+= 1;
+        }
+    }
+    int pc = pile[pos];
+    pile[pos] = -1;
+
+    return pc;
+}
+
+int tradePiece(int *pile, int pc){
+    int nPc = getPiece(pile);
+    int pos = 0;
+    while (pos < 108){
+        if (pile[pos] == -1){
+            break;
+        }else{
+            pos++;
+        }
+    }
+    pile[pos] = pc;
+    return nPc;
+}
+
+int* getHand(int *pile){
+    int i;
+    int *h = (int*) malloc(sizeof(int)*7);
+    for(i = 0; i < 7; i++){
+        h[i] = getPiece(pile);
+    }
+    return h;
+}
+
+void printHand(int *hand){
+    int i;
+    for(i = 0; i < 7; i++){
+        int ty = hand[i] / 10;
+        int cor = hand[i] - ty*10;
+        printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);
+    }
+    printf("\n");
+}
+
 int main(){
     int boardLine = 1;
     int boardCol = 1;
     int centerL = 0, centerC = 0;
-    int **board;
+    int **board, *pile, *hand;
     int i = 0, cont = 1;
+
+    pile = makePile();
 
     board = makeBoard();
     printBoard(board, boardLine, boardCol, centerL, centerC);
+
+    hand = getHand(pile);
+    printHand(hand);
 
     while (cont){
 
@@ -351,9 +424,14 @@ int main(){
         }else{
             if(!strcmp(op[0], "sair"))
                 cont = 0;
+            if(!strcmp(op[0], "trocar")){
+                printf("trade\n");
+            }
         }
     }
 
     freeBoard(board, boardLine);
+    free(pile);
+    free(hand);
     return 0;
 }
