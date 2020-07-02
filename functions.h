@@ -13,3 +13,6 @@ int tradePiece(int *pile, int pc);
 
 int* getHand(int *pile);
 void printHand(int *hand);
+
+char** menu(int *nJog);
+void freeAll(int **board, int boardLine, int *pile, int **hand,int nJog, char **nomeJog);

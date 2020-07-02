@@ -4,20 +4,24 @@
 #include <ctype.h>
 #include <time.h>
 
+//Definindo constantes para ateração de cor
 const char cCodes[6][9] = {"\e[0;31m", "\e[0;32m", "\e[0;33m", "\e[0;34m", "\e[0;35m", "\e[0;36m"};
 const char rColor[9] = "\033[0m";
 
+//Definindo constantes para armazenar os tipos (formas) das peças e suas cores
 const char types[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
 const char colors[6] = {'1', '2', '3', '4', '5', '6'};
 
+//Função para liberar o tabuleiro
 void freeBoard(int** board, int lines){
     int i;
     for(i = 0; i < lines; i++){
-        free(board[i]);
+        free(board[i]); //liberando as linhas
     }
-    free(board);
+    free(board);    //liberando o ponteiro inicial
 }
 
+//Função para alocar o primeiro tabuleiro (1x1)
 int** makeBoard(){
     int **board;
     int i;
@@ -31,12 +35,13 @@ int** makeBoard(){
             printf("Falha na alocacao!\n");
             exit(0);
         }else{
-            board[0][0] = -1;
+            board[0][0] = -1;   //Inserindo -1 na posição vazia
             return board;
         }
     }
 }
 
+//Função para imprimir o tabuleiro
 void printBoard(int **board, int lins, int cols, int cLin, int cCol){
     int l,c, ty, cor;
     for(l = 0; l < lins; l++){
@@ -58,12 +63,14 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
 
         }
 
+        //Imprimindo primeira divisória de linha
         printf("     -"); //para a coluna indice
         for(c = 0; c < cols; c++)
             printf("-----");    //para as demais colunas
         printf("\n");
 
         for(c = 0; c < cols; c++){
+            //imprimindo a numeração da linha
             if (c == 0){
                 //Corrigir alinhamento
                 if((l-cLin >= 0) && (l-cLin < 10))
@@ -75,22 +82,27 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
                         printf(" %d |", l-cLin);
                 }
             }
+            //Para peças inseridas
             if (board[l][c]  != -1){
-                ty = board[l][c] / 10;
-                cor = board[l][c] - ty*10;
-                printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);
+                ty = board[l][c] / 10;      //encontrando o tipo da peça
+                cor = board[l][c] - ty*10;  //encontrando a cor da peça
+                printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);   //imprimnido no formato esperado
             }else{
-                printf("    |");
+                //para peças não inseridas
+                printf("    |");    // imprimindo espaço vazio do tamanho necessário
             }
         }
         printf("\n");
     }
+
+    //imprimindo demais divisórias de linhas
     printf("     -"); //para a coluna indice
     for(c = 0; c < cols; c++)
         printf("-----");    //para as demais colunas
     printf("\n\n");
 }
 
+//Função para expandir o tabuleiro
 int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
     int auxboard[*lin][*col];
     int l,c;
@@ -121,9 +133,11 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
         }
     }
 
+    //definindo noas dimensões
     int nLin = *lin + revL + fowL;
     int nCol = *col + revC + fowC;
 
+    //liberando a memória anterior
     freeBoard(board, *lin);
 
     //aumentando o tamanho da matriz
@@ -146,6 +160,7 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
     *centerL += revL;
     *centerC += revC;
 
+    //preenchendo as posições
     for(l = 0; l < nLin; l++){
         for(c = 0; c < nCol; c++){
             if((l >= revL) && (c >= revC) && (l < *lin + revL) && (c < *col + revC)){
@@ -155,12 +170,15 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
             }
         }
     }
+    //alterando valores armazenados  
+
     *lin = nLin;
     *col = nCol;
 
     return board;
 }
 
+//Função para verificar se o movimento é válido
 int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols){
     int response = 1;
     int i, dirL = 0, dirC = 0;
@@ -178,6 +196,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
     }
     //verificando se existe uma peça semelhante a volta e não conflita com as demais
     int side, elL = -1, elC = -1;
+    //verificando em cima
     if(centerL + l - 1 >= 0){
         puts("1");
         side = board[centerL + l - 1][centerC + c];
@@ -196,6 +215,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
             }
         }
     }
+    //verificando embaixo
     if(centerL + l + 1 < lins){
         side = board[centerL + l + 1][centerC + c];
         if(side != -1){
@@ -213,6 +233,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
             }
         }
     }
+    //verificando esquerda
     if(centerC + c - 1 >= 0){
         side = board[centerL + l][centerC + c - 1];
         if(side != -1){
@@ -230,6 +251,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
             }
         }
     }
+    //verificando direita
     if(centerC + c + 1 < cols){
         side = board[centerL + l][centerC + c + 1];
         if(side != -1){
@@ -250,6 +272,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
 
     //verificando se existe uma peça igual no grupo e se é compativel com td grupo
     int li = centerL + l, co = centerC + c;
+    //grupo na vertical
     if(dirL != 0){
         while ((li + dirL >= 0)&&(li + dirL < lins)){
             li += dirL;
@@ -267,6 +290,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
         }
     }
     li = centerL + l, co = centerC + c;
+    //Grupo na horizontal
     if(dirC != 0){
         while ((co + dirC >= 0)&&(co + dirC < cols)){
             co += dirC;
@@ -287,6 +311,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
     return response;
 }
 
+//Função para realizar o movimento
 void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC, int lins, int cols){
     int i, p = 0, val = 0;
     pc[0] = toupper(pc[0]);
@@ -304,7 +329,7 @@ void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC, int
     }
 
     if(val == 2){
-        if(validateMove(board, p, l, c, centerL, centerC, lins, cols)){
+        if(validateMove(board, p, l, c, centerL, centerC, lins, cols)){ //verificar se o movimento é válido
             //inserindo no tabuleiro
             board[centerL + l][centerC + c] = p;
         }else{
@@ -315,10 +340,16 @@ void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC, int
     }
 }
 
+//FUnção para criar as peças do "saco"
 int* makePile(){
     int *vet = (int*) malloc(sizeof(int)*108);
+    if(vet == NULL){
+        printf("Falha na alocação!\n");
+        exit(0);
+    }
     int i = 6, e = 6, cont;
-    for(cont = 0; cont < 108; cont++){
+    for(cont = 0; cont < 36; cont++){
+        //alterando variáveis para que a incerção seja na ordem
         if (e < 5){
             e++;
         }else{
@@ -328,30 +359,45 @@ int* makePile(){
         if(i > 5){
             i = 0;
         }
+        //inserindo as 3 peças iguais em cada ciclo de peças iguais
         vet[cont] = (i+1)*10 + e+1;
+        vet[cont + 36] = (i+1)*10 + e+1;
+        vet[cont + 72] = (i+1)*10 + e+1;
     }
     return vet;
 }
 
+//Função para "comprar uma peça" do "saco"
 int getPiece(int *pile){
-    srand(time(0));
+    int control = 0;
+    //gerando numero aleatório até 108
+    srand(time(0));     
     int pos = rand() % 108;
+
+    //encontando a próxima posição que contenha uma peça (casa a escolhida não possua)
     while(pile[pos] == -1){
         if (pos >= 108){
             pos = 0;
         }else{
             pos+= 1;
         }
+        control ++;
+        if (control == 108){
+            return 0;  //caso não exista nenhuma peça no vetor
+        }
     }
-    int pc = pile[pos];
-    pile[pos] = -1;
+
+    int pc = pile[pos]; //armazenando a peça
+    pile[pos] = -1;     //esvaziando a posição
 
     return pc;
 }
 
+//função para trocar uma peça
 int tradePiece(int *pile, int pc){
-    int nPc = getPiece(pile);
+    int nPc = getPiece(pile);   //pega uma nova peça aleatória
     int pos = 0;
+    //insere a peça a ser trocada na pimeira posição vazia encontrada
     while (pos < 108){
         if (pile[pos] == -1){
             break;
@@ -360,24 +406,89 @@ int tradePiece(int *pile, int pc){
         }
     }
     pile[pos] = pc;
+
     return nPc;
 }
 
+//recolhe as 7 peças para niciar uma "mão"
 int* getHand(int *pile){
     int i;
     int *h = (int*) malloc(sizeof(int)*7);
+    if(h == NULL){
+        printf("Falha na Alocação!\n");
+        exit(0);
+    }
     for(i = 0; i < 7; i++){
-        h[i] = getPiece(pile);
+        h[i] = getPiece(pile);  //inserindo nova peça na mão
     }
     return h;
 }
 
+//imprime a "mão"
 void printHand(int *hand){
     int i;
     for(i = 0; i < 7; i++){
         int ty = hand[i] / 10;
         int cor = hand[i] - ty*10;
-        printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);
+        printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);   //imprimnido no formato esperado
     }
     printf("\n");
+}
+
+char** menu(int *nJog){
+    //Imprimndo Qwirkle personalizado
+    printf(" ::::::::   :::       ::: ::::::::::: :::::::::  :::    ::: :::        ::::::::::\n");
+    printf(":+:    :+:  :+:       :+:     :+:     :+:    :+: :+:   :+:  :+:        :+:\n");
+    printf("+:+    +:+  +:+       +:+     +:+     +:+    +:+ +:+  +:+   +:+        +:+\n");
+    printf("+#+    +:+  +#+  +:+  +#+     +#+     +#++:++#:  +#++:++    +#+        +#++:++#\n");
+    printf("+#+  # +#+  +#+ +#+#+ +#+     +#+     +#+    +#+ +#+  +#+   +#+        +#+\n");
+    printf("#+#   +#+    #+#+# #+#+#      #+#     #+#    #+# #+#   #+#  #+#        #+#\n");
+    printf(" ###### ###   ###   ###   ########### ###    ### ###    ### ########## ##########\n\n");
+
+    int val = 0;
+    while(!val){
+        printf("Digite o numero de jogadores (2-4): ");
+        scanf("%d", nJog);
+        printf("\n");
+
+        if((*nJog < 1)||(*nJog > 4)){
+            printf("Numero inválido!\n");
+        }else{
+            val = 1;
+        }
+    }
+
+    char **jog = (char**) malloc(sizeof(char*) * (*nJog));
+    if (jog == NULL){
+        printf("Falha na alocacao!\n");
+        exit(0);
+    }else{
+        for(int l = 0; l < *nJog; l++){
+            jog[l] = (char *) malloc(sizeof(char)*(21));
+            if(jog[l] == NULL){
+                printf("Falha na alocacao!\n");
+                exit(0);
+            }
+        }
+    }
+
+    char nome[21];
+    for(int l = 0; l < *nJog; l++){
+            printf("Digite um nome para o jogador #%d (max = 20 caracteres): ", l+1);
+            scanf(" %s", nome);
+            strcpy(jog[l], nome);
+    }
+
+    return jog;
+}
+
+void freeAll(int **board, int boardLine, int *pile, int **hand,int nJog, char **nomeJog){
+    freeBoard(board, boardLine);
+    free(pile);
+    free(hand);
+    for(int i = 0; i < nJog; i++){
+        free(hand[i]);
+        free(nomeJog[i]);
+    }
+    free(nomeJog);
 }
