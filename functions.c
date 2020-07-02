@@ -178,6 +178,29 @@ int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC){
     return board;
 }
 
+//Função para codificar a peça
+int codePiece(char *pc){
+    int i, p = 0, val = 0;
+    pc[0] = toupper(pc[0]);
+
+    for(i = 0; i < 6; i++){
+        if(pc[0] == types[i]){
+            p += (i+1)*10;
+            val += 1;
+        }
+        if(pc[1] == colors[i]){
+            p += i+1;
+            val += 1;
+        }
+    }
+
+    if(val == 2){
+        return p;
+    }else{
+        return 0;
+    }
+}
+
 //Função para verificar se o movimento é válido
 int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols){
     int response = 1;
@@ -312,35 +335,24 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
 }
 
 //Função para realizar o movimento
-void makeMove(int** board, char *pc, int l, int c, int centerL, int centerC, int lins, int cols){
-    int i, p = 0, val = 0;
-    pc[0] = toupper(pc[0]);
+int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols){
+    int i, val = 0;
 
-    for(i = 0; i < 6; i++){
-        //Codificando a peça
-        if(pc[0] == types[i]){
-            p += (i+1)*10;
-            val += 1;
-        }
-        if(pc[1] == colors[i]){
-            p += i+1;
-            val += 1;
-        }
-    }
-
-    if(val == 2){
-        if(validateMove(board, p, l, c, centerL, centerC, lins, cols)){ //verificar se o movimento é válido
+    if(pc){
+        if(validateMove(board, pc, l, c, centerL, centerC, lins, cols)){ //verificar se o movimento é válido
             //inserindo no tabuleiro
-            board[centerL + l][centerC + c] = p;
+            board[centerL + l][centerC + c] = pc;
+            return 1;
         }else{
             printf("Jogada invalida\n");
         }
     }else{
         printf("Peca invalida\n");
     }
+    return 0;
 }
 
-//FUnção para criar as peças do "saco"
+//Função para criar as peças do "saco"
 int* makePile(){
     int *vet = (int*) malloc(sizeof(int)*108);
     if(vet == NULL){
@@ -370,8 +382,7 @@ int* makePile(){
 //Função para "comprar uma peça" do "saco"
 int getPiece(int *pile){
     int control = 0;
-    //gerando numero aleatório até 108
-    srand(time(0));     
+    //gerando numero aleatório até 108     
     int pos = rand() % 108;
 
     //encontando a próxima posição que contenha uma peça (casa a escolhida não possua)
@@ -428,13 +439,16 @@ int* getHand(int *pile){
 void printHand(int *hand){
     int i;
     for(i = 0; i < 7; i++){
-        int ty = hand[i] / 10;
-        int cor = hand[i] - ty*10;
-        printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);   //imprimnido no formato esperado
+        if(hand[i] != -1){
+            int ty = hand[i] / 10;
+            int cor = hand[i] - ty*10;
+            printf(" %s%c%c%s |", cCodes[cor-1], types[ty-1], colors[cor-1], rColor);   //imprimnido no formato esperado
+        }
     }
     printf("\n");
 }
 
+//Exibe o menu e coleta informações dos jogadores
 char** menu(int *nJog){
     //Imprimndo Qwirkle personalizado
     printf(" ::::::::   :::       ::: ::::::::::: :::::::::  :::    ::: :::        ::::::::::\n");
@@ -482,13 +496,47 @@ char** menu(int *nJog){
     return jog;
 }
 
+//libera td memória alocada donâmicamente
 void freeAll(int **board, int boardLine, int *pile, int **hand,int nJog, char **nomeJog){
     freeBoard(board, boardLine);
     free(pile);
-    free(hand);
+    free(*hand);
     for(int i = 0; i < nJog; i++){
         free(hand[i]);
         free(nomeJog[i]);
     }
     free(nomeJog);
+}
+
+int checkHand(int *h, int pc){
+    //verificando se é uma peca valida
+    if(!pc){
+        return 0;
+    }
+
+    //verificando se a peca esta na mão do jogador
+    for(int i = 0; i < 7; i++){
+        if(pc == h[i]){
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void removeFromHand(int pc, int *hand){
+    for(int i = 0; i < 7; i++){
+        if(hand[i] == pc){
+            hand[i] = -1;
+        }
+    }
+}
+
+void reloadHand(int *hand, int *pile){
+    for(int i = 0; i < 7; i++){
+        if(hand[i] == -1){
+            hand[i] = getPiece(pile);
+        }
+    }
+    
 }
