@@ -25,6 +25,8 @@ int main(){
     for(i = 0; i < nJog; i++){
         hand[i] = getHand(pile);
     }
+
+    int lastMove[4] = {-1, -1, -1, -1};  //linha1 coluna1 liha2 coluna2
     
     //iniciando o jogo
     int vez = 0;
@@ -60,7 +62,7 @@ int main(){
             int pc = codePiece(op[1]);
             
             if(checkHand(hand[vez], pc)){
-                if(makeMove(board, pc, l, c, centerL, centerC, boardLine, boardCol)){
+                if(makeMove(board, pc, l, c, centerL, centerC, boardLine, boardCol, lastMove)){
                     removeFromHand(pc, hand[vez]);
                     board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
                 }
@@ -70,16 +72,20 @@ int main(){
             
         }else{
             if(!strcmp(op[0], "trocar")){
-                printf("trade\n");
+                int pc = codePiece(op[1]);
+                tradePiece(pile, pc, hand[vez]);
             }
             if(!strcmp(op[0], "sair"))
                 end = 0;
             if(!strcmp(op[0], "passar")){
                 reloadHand(hand[vez], pile);
+                for(i = 0; i < 4; i++)
+                    lastMove[i] = -1; 
                 vez++;
                 if(vez >= nJog){
                     vez = 0;
                 }
+                system("clear || cls"); //limpando a tela
             }
         }
     }

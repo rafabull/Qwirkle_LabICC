@@ -202,9 +202,10 @@ int codePiece(char *pc){
 }
 
 //Função para verificar se o movimento é válido
-int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols){
+int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols, int *lastMove){
     int response = 1;
     int i, dirL = 0, dirC = 0;
+
     //Verificando se a linha é valida
     if((centerL + l < 0) || (centerL + l >= lins)){
         return 0;
@@ -217,6 +218,25 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
     if(board[centerL + l][centerC + c] != -1){
         return 0;
     }
+    //verificando se esta grudado a uma peça caso não seja o movimento inicial
+    int v1 = 1;
+    printf("lins %d, cols %d \n\n", lins, cols);
+    if((lins != 1) || (cols != 1)){
+        if(centerL + l - 1 >= 0)
+            if(board[centerL + l - 1][centerC + c] != -1) v1 = 0;
+        if(centerL + l + 1 < lins)
+            if(board[centerL + l + 1][centerC + c] != -1) v1 = 0;
+        if(centerC + c - 1 >= 0)
+            if(board[centerL + l][centerC + c - 1] != -1) v1 = 0;
+        if(centerC + c + 1 < cols)
+            if(board[centerL + l][centerC + c + 1] != -1) v1 = 0;
+    }else{
+        v1 = 0;
+    }
+    if(v1){
+        return 0;
+    }
+
     //verificando se existe uma peça semelhante a volta e não conflita com as demais
     int side, elL = -1, elC = -1;
     //verificando em cima
@@ -331,15 +351,57 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
         }
     }
 
+    //verificando de compõe uma linha com os movimentos ateriores
+    v1 = 0;
+    int v2 = 0;
+    for(i = 0; i < 4; i+=2){
+        if(lastMove[i] != -1){
+            if(v1 == 0){
+                if((l == lastMove[i]) || ( c == lastMove[i+1])){
+                    v2++;
+                }
+            }else{
+                if((l == lastMove[i]) && (l == lastMove[i-2])){ //verifica se tdo esta na mesma linha
+                    if((lastMove[i+1] - lastMove[i-1] > 0) && (l - lastMove[i+1] > 0)){ //verifica se esta no sentido certo
+                        v2++;
+                    }
+                    if((lastMove[i+1] - lastMove[i-1] < 0) && (l - lastMove[i+1] < 0)){ //verifica se esta no sentido certo
+                        v2++;
+                    }
+                }
+                if((c == lastMove[i+1]) && (c == lastMove[i-1])){   //verifica se tudo esta na mesma coluna
+                    if((lastMove[i] - lastMove[i-2] > 0) && (l - lastMove[i-2] > 0)){ //verifica se esta no sentido certo
+                        v2++;
+                    }
+                    if((lastMove[i] - lastMove[i-2] < 0) && (l - lastMove[i-2] < 0)){ //verifica se esta no sentido certo
+                        v2++;
+                    }
+                }
+            }
+            v1++;
+        }
+    }
+    if(v1 != v2){
+        return 0;
+    }
+
     return response;
 }
 
 //Função para realizar o movimento
-int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols){
+int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols, int *lastMove){
     int i, val = 0;
 
     if(pc){
-        if(validateMove(board, pc, l, c, centerL, centerC, lins, cols)){ //verificar se o movimento é válido
+        if(validateMove(board, pc, l, c, centerL, centerC, lins, cols, lastMove)){ //verificar se o movimento é válido
+            //adicionar a ultima jogada
+            if(lastMove[0] == -1){
+                lastMove[0] = l;
+                lastMove[1] = c;
+            }else{
+                lastMove[2] = l;
+                lastMove[3] = c;
+            }
             //inserindo no tabuleiro
             board[centerL + l][centerC + c] = pc;
             return 1;
@@ -405,20 +467,34 @@ int getPiece(int *pile){
 }
 
 //função para trocar uma peça
-int tradePiece(int *pile, int pc){
+void tradePiece(int *pile, int pc, int*hand){
     int nPc = getPiece(pile);   //pega uma nova peça aleatória
     int pos = 0;
-    //insere a peça a ser trocada na pimeira posição vazia encontrada
-    while (pos < 108){
-        if (pile[pos] == -1){
+    //Adicionando nova peça a mão do jogador
+    int v = 1;
+    while (pos < 7){
+        if(hand[pos] == pc){
+            hand[pos] = nPc;
+            v = 0;
             break;
         }else{
-            pos++;
+            pos ++;
         }
     }
-    pile[pos] = pc;
-
-    return nPc;
+    if(v){
+        printf("Voce nao possui essa peca! \n");
+    }else{
+        pos = 0;
+        //insere a peça a ser trocada na pimeira posição vazia encontrada
+        while (pos < 108){
+            if (pile[pos] == -1){
+                break;
+            }else{
+                pos++;
+            }
+        }
+        pile[pos] = pc;
+    }   
 }
 
 //recolhe as 7 peças para niciar uma "mão"
@@ -465,7 +541,7 @@ char** menu(int *nJog){
         scanf("%d", nJog);
         printf("\n");
 
-        if((*nJog < 1)||(*nJog > 4)){
+        if((*nJog < 2)||(*nJog > 4)){
             printf("Numero inválido!\n");
         }else{
             val = 1;
@@ -528,6 +604,7 @@ void removeFromHand(int pc, int *hand){
     for(int i = 0; i < 7; i++){
         if(hand[i] == pc){
             hand[i] = -1;
+            break;
         }
     }
 }

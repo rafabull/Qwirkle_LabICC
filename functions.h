@@ -5,12 +5,12 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol);
 int** expandBoard(int **board, int* lin, int* col, int* centerL, int* centerC);
 
 int codePiece(char *pc);
-int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols);
-int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols);
+int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols, int *lastMove);
+int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols, int *lastMove);
 
 int* makePile();
 int getPiece(int *pile);
-int tradePiece(int *pile, int pc);
+void tradePiece(int *pile, int pc, int *hand);
 
 int* getHand(int *pile);
 void printHand(int *hand);
