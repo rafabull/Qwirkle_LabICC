@@ -208,14 +208,17 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
 
     //Verificando se a linha é valida
     if((centerL + l < 0) || (centerL + l >= lins)){
+        printf("Linha inválida\n");
         return 0;
     }
     //verificando se a coluna é valida
     if((centerC + c < 0) || (centerC + c >= cols)){
+        printf("Coluna inválida\n");
         return 0;
     }
     //verfcando se a posição está vazia
     if(board[centerL + l][centerC + c] != -1){
+        printf("Posicao preenchida\n");
         return 0;
     }
     //verificando se esta grudado a uma peça caso não seja o movimento inicial
@@ -234,6 +237,7 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
         v1 = 0;
     }
     if(v1){
+        printf("Deveria haver pecas conectadas\n");
         return 0;
     }
 
@@ -253,8 +257,10 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
                     elL = 1;    //compativel com a cor
                     dirL = -1;
                 }
-                else
+                else{
+                    printf("Conflita com uma peca ao lado\n");
                     return 0;
+                }
             }
         }
     }
@@ -271,8 +277,10 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
                     elL = 1;    //compativel com a cor
                     dirL = 1;
                 }
-                else
+                else{
+                    printf("Conflita com uma peca ao lado\n");
                     return 0;
+                }
             }
         }
     }
@@ -289,8 +297,10 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
                     elC = 1;    //compativel com a cor
                     dirC = -1;
                 }
-                else
+                else{
+                    printf("Conflita com uma peca ao lado\n");
                     return 0;
+                }
             }
         }
     }
@@ -307,8 +317,10 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
                     elC = 1;    //compativel com a cor
                     dirC = 1;
                 }
-                else
+                else{
+                    printf("Conflita com uma peca ao lado\n");
                     return 0;
+                }
             }
         }
     }
@@ -323,12 +335,18 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
             if(side == -1)
                 break;
             else{
-                if (side == pc)
+                if (side == pc){
+                    printf("Ha uma peca igual na linha\n");
                     return 0;
-                if ((elL == 0) && (side/10 != pc/10))
+                }
+                if ((elL == 0) && (side/10 != pc/10)){
+                    printf("Incompativel com a linha\n");
                     return 0;
-                if ((elL == 1) && (side - (side/10)*10 != pc - (pc/10)*10))
+                }
+                if ((elL == 1) && (side - (side/10)*10 != pc - (pc/10)*10)){
+                    printf("Incompativel com a linha\n");
                     return 0;
+                }
             }
         }
     }
@@ -341,12 +359,18 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
             if(side == -1)
                 break;
             else{
-                if (side == pc)
+                if (side == pc){
+                    printf("Ha uma peca igual na linha\n");
                     return 0;
-                if ((elC == 0) && (side/10 != pc/10))
+                }
+                if ((elL == 0) && (side/10 != pc/10)){
+                    printf("Incompativel com a linha\n");
                     return 0;
-                if ((elC == 1) && (side - (side/10)*10 != pc - (pc/10)*10))
+                }
+                if ((elL == 1) && (side - (side/10)*10 != pc - (pc/10)*10)){
+                    printf("Incompativel com a linha\n");
                     return 0;
+                }
             }
         }
     }
@@ -354,34 +378,42 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
     //verificando de compõe uma linha com os movimentos ateriores
     v1 = 0;
     int v2 = 0;
-    for(i = 0; i < 4; i+=2){
-        if(lastMove[i] != -1){
-            if(v1 == 0){
-                if((l == lastMove[i]) || ( c == lastMove[i+1])){
-                    v2++;
-                }
-            }else{
-                if((l == lastMove[i]) && (l == lastMove[i-2])){ //verifica se tdo esta na mesma linha
-                    if((lastMove[i+1] - lastMove[i-1] > 0) && (l - lastMove[i+1] > 0)){ //verifica se esta no sentido certo
-                        v2++;
-                    }
-                    if((lastMove[i+1] - lastMove[i-1] < 0) && (l - lastMove[i+1] < 0)){ //verifica se esta no sentido certo
-                        v2++;
-                    }
-                }
-                if((c == lastMove[i+1]) && (c == lastMove[i-1])){   //verifica se tudo esta na mesma coluna
-                    if((lastMove[i] - lastMove[i-2] > 0) && (l - lastMove[i-2] > 0)){ //verifica se esta no sentido certo
-                        v2++;
-                    }
-                    if((lastMove[i] - lastMove[i-2] < 0) && (l - lastMove[i-2] < 0)){ //verifica se esta no sentido certo
-                        v2++;
-                    }
-                }
-            }
+    if(lastMove[0] != 999){
+        v1++;
+        if(lastMove[2] == 999){
+            //Verificando se esta conectado
+            if((l == lastMove[0]+1) && (c == lastMove[1]))
+                v2++;
+            if((l == lastMove[0]-1) && (c == lastMove[1]))
+                v2++;
+            if((l == lastMove[0]) && (c == lastMove[1]+1))
+                v2++;
+            if((l == lastMove[0]) && (c == lastMove[1]-1))
+                v2++;
+        }else{
             v1++;
+            if((l == lastMove[0]) && (l == lastMove[2])){ //verifica se tdo esta na mesma linha
+                v2++;
+                //verificando se esta conectado
+                if((c == lastMove[1]+1) || (c == lastMove[1]-1))
+                    v2++;
+                if((c == lastMove[3]+1) || (c == lastMove[3]-1))
+                    v2++;
+            }
+            if((c == lastMove[1]) && (c == lastMove[3])){   //verifica se tudo esta na mesma coluna
+                v2++;
+                //verificando se esta conectado
+                if((l == lastMove[0]+1) || (l == lastMove[0]-1))
+                    v2++;
+                if((l == lastMove[2]+1) || (l == lastMove[2]-1))
+                    v2++;
+            }
         }
     }
+    
     if(v1 != v2){
+        printf("V1 %d, v2 %d\n", v1, v2);
+        printf("Incompativel com os movimentos anteriores\n");
         return 0;
     }
 
@@ -395,7 +427,7 @@ int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int li
     if(pc){
         if(validateMove(board, pc, l, c, centerL, centerC, lins, cols, lastMove)){ //verificar se o movimento é válido
             //adicionar a ultima jogada
-            if(lastMove[0] == -1){
+            if(lastMove[0] == 999){
                 lastMove[0] = l;
                 lastMove[1] = c;
             }else{
@@ -617,3 +649,4 @@ void reloadHand(int *hand, int *pile){
     }
     
 }
+

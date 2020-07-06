@@ -19,14 +19,16 @@ int main(){
     int nJog;
     char **nomeJog = menu(&nJog);   //Menu usado para configurações de jogadores
     fflush(stdin);
+    int pontos[nJog];
 
     //armazenado a primeira mão de cada jogador
     int *hand[nJog];
     for(i = 0; i < nJog; i++){
         hand[i] = getHand(pile);
+        pontos[i] = 0;  //inixializa os pontos com 0
     }
 
-    int lastMove[4] = {-1, -1, -1, -1};  //linha1 coluna1 liha2 coluna2
+    int lastMove[4] = {999, 999, 999, 999};  //linha1 coluna1 liha2 coluna2
     
     //iniciando o jogo
     int vez = 0;
@@ -34,7 +36,7 @@ int main(){
         printBoard(board, boardLine, boardCol, centerL, centerC);
 
         //imprimindo dados da vez
-        printf("Vez de %s \n", nomeJog[vez]);
+        printf("Vez de %s | Pontos: %d\n", nomeJog[vez], pontos[vez]);
         printHand(hand[vez]);
 
         //Armazenando o comando digitado
@@ -78,14 +80,15 @@ int main(){
             if(!strcmp(op[0], "sair"))
                 end = 0;
             if(!strcmp(op[0], "passar")){
+                
                 reloadHand(hand[vez], pile);
                 for(i = 0; i < 4; i++)
-                    lastMove[i] = -1; 
+                    lastMove[i] = 999; 
                 vez++;
                 if(vez >= nJog){
                     vez = 0;
                 }
-                system("clear || cls"); //limpando a tela
+                //system("clear || cls"); //limpando a tela
             }
         }
     }

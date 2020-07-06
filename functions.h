@@ -20,3 +20,4 @@ void freeAll(int **board, int boardLine, int *pile, int **hand,int nJog, char **
 int checkHand(int *h, int pc);
 void removeFromHand(int pc, int *hand);
 void reloadHand(int *hand, int *pile);
+
