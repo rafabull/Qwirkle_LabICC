@@ -363,11 +363,11 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
                     printf("Ha uma peca igual na linha\n");
                     return 0;
                 }
-                if ((elL == 0) && (side/10 != pc/10)){
+                if ((elC == 0) && (side/10 != pc/10)){
                     printf("Incompativel com a linha\n");
                     return 0;
                 }
-                if ((elL == 1) && (side - (side/10)*10 != pc - (pc/10)*10)){
+                if ((elC == 1) && (side - (side/10)*10 != pc - (pc/10)*10)){
                     printf("Incompativel com a linha\n");
                     return 0;
                 }
@@ -431,9 +431,52 @@ int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int li
                 lastMove[0] = l;
                 lastMove[1] = c;
             }else{
-                lastMove[2] = l;
-                lastMove[3] = c;
+                if(lastMove[2] == 999){
+                    lastMove[2] = l;
+                    lastMove[3] = c;
+                }else{
+                    //manter as fronteiras corretas
+                    //fileiras verticais
+                    if(lastMove[0] > lastMove[2]){
+                        if(l > lastMove[0]){
+                            lastMove[0] = l;
+                            lastMove[1] = c;
+                        }else{
+                            lastMove[2] = l;
+                            lastMove[3] = c;
+                        }
+                    }
+                    if(lastMove[0] < lastMove[2]){
+                        if(l < lastMove[0]){
+                            lastMove[0] = l;
+                            lastMove[1] = c;
+                        }else{
+                            lastMove[2] = l;
+                            lastMove[3] = c;
+                        }
+                    }
+                    //fileiras horizontais
+                    if(lastMove[1] > lastMove[3]){
+                        if(l > lastMove[0]){
+                            lastMove[0] = l;
+                            lastMove[1] = c;
+                        }else{
+                            lastMove[2] = l;
+                            lastMove[3] = c;
+                        }
+                    }
+                    if(lastMove[1] < lastMove[3]){
+                        if(l < lastMove[1]){
+                            lastMove[0] = l;
+                            lastMove[1] = c;
+                        }else{
+                            lastMove[2] = l;
+                            lastMove[3] = c;
+                        }
+                    }
+                }
             }
+            printf("moves\n l1: %d c1:%d\n l2: %d c2:%d\n", lastMove[0], lastMove[1], lastMove[2], lastMove[3]);
             //inserindo no tabuleiro
             board[centerL + l][centerC + c] = pc;
             return 1;
@@ -477,11 +520,11 @@ int* makePile(){
 int getPiece(int *pile){
     int control = 0;
     //gerando numero aleatório até 108     
-    int pos = rand() % 108;
+    int pos = rand() % 107;
 
     //encontando a próxima posição que contenha uma peça (casa a escolhida não possua)
     while(pile[pos] == -1){
-        if (pos >= 108){
+        if (pos >= 107){
             pos = 0;
         }else{
             pos+= 1;
@@ -650,3 +693,178 @@ void reloadHand(int *hand, int *pile){
     
 }
 
+//recebe cordenadas direto no formato da matriz
+int countConnect(int **board, int l, int c, int side){
+    printf("testando em l: %d e c: %d\n", l, c);
+    if( board[l][c] == -1){
+        return 0;
+    }
+    if(side == 1){  //cima
+        return 1 + countConnect(board, l+1, c, side);
+    }
+    if(side == 2){  //Direita
+        return 1 + countConnect(board, l, c+1, side);
+    }
+    if(side == -1){  //Baixo
+        return 1 + countConnect(board, l-1, c, side);
+    }
+    if(side == -2){  //Esquerda
+        return 1 + countConnect(board, l, c-1, side);
+    }
+}
+
+//Função conta os pontos daquela jogada
+int countPoints(int **board, int centerL, int centerC, int *lastMove){
+    int pontos = 0, l = 0, c = 0;
+    int pt = 0;
+    int v = 1,  s = 1;
+    int primeiraL, ultimaL;
+    int primeiraC, ultimaC;
+
+    if((lastMove[0] == 999) && (lastMove[2] == 999)){ //caso nenhuma jogada tenha sido feita
+        printf("Pontos dessa rodada: %d\n", pontos);
+        return 0;
+    }
+    if (lastMove[2] == 999){   //caso tenha sido inserida apenas uma peça
+        l = centerL + lastMove[0];
+        c = centerC + lastMove[1];
+
+        pt++; //A peca deve ser contada sempre
+
+        //Análise Vertical
+        pt += countConnect(board, l+1, c, 1);
+        pt += countConnect(board, l-1, c, -1);
+        pontos += pt;
+        //Analise de qwirkle
+        if (pt == 6){
+            pontos += 6;
+        }
+        pt = 0;
+
+        //Análise horizontal
+        pt += countConnect(board, l, c+1, 2);
+        pt += countConnect(board, l, c-1, -2);
+        pontos += pt;
+        //Analise de qwirkle
+        if (pt == 6){
+            pontos += 6;
+        }
+        pt = 0;
+
+        printf("pontos Uma jogada\n");
+        printf("Pontos dessa rodada: %d\n", pontos);
+        return pontos;
+    }
+
+    //Se foi inserida uma linha (mais de uma peça)
+    //Caso a linha colocada seja na horizontal
+    if(lastMove[0] == lastMove[2]){ 
+        //Análise perpendicular
+        //Definindo o sentido a ser percorrido
+        if(lastMove[1] <= lastMove[3]){
+            s = 1;
+        }else{
+            s = -1;
+        }
+        //percorrendo todas as peças jogadas
+        int i = lastMove[1];
+        int cont = 1;
+        l = centerL + lastMove[0];
+        while(cont){
+            c = centerC + i;
+
+            pt += countConnect(board, l+1, c, 1);
+            pt += countConnect(board, l-1, c, -1);
+            if (pt != 0) pt++; //se houver uma linha a peca deve ser contada
+        
+            pontos += pt;
+            //Analise de qwirkle
+            if (pt == 6){
+                pontos += 6;
+            }
+            pt = 0;
+
+            //caminhando no sentido correto
+            i += s;
+
+            //codicioes de saida
+            if((i > lastMove[1]) && (i > lastMove[3]))
+                cont = 0;
+            if((i < lastMove[1]) && (i < lastMove[3]))
+                cont = 0;
+        }
+        //Análise da linha jogada
+        //Análise horizontal
+        l = centerL + lastMove[0];
+        c = centerC + lastMove[1];
+        pt += countConnect(board, l, c+1, 2);
+        pt += countConnect(board, l, c-1, -2);
+        if (pt != 0) pt++; //se houver uma linha a peca deve ser contada
+
+        pontos += pt;
+        //Analise de qwirkle
+        if (pt == 6){
+            pontos += 6;
+        }
+        pt = 0;
+
+        printf("Pontos dessa rodada: %d\n", pontos);
+        return pontos;
+    }
+    //Caso a linha colocada seja na vertical
+    if(lastMove[1] == lastMove[3]){ 
+        //Análise perpendicular
+        //Definindo o sentido a ser percorrido
+        if(lastMove[0] <= lastMove[2]){
+            s = 1;
+        }else{
+            s = -1;
+        }
+        //percorrendo todas as peças jogadas
+        int i = lastMove[0];
+        int cont = 1;
+        c = centerC + lastMove[1];
+        while(cont){
+            l = centerL + i;
+
+            pt += countConnect(board, l, c+1, 2);
+            pt += countConnect(board, l, c-1, -2);
+            if (pt != 0) pt++; //se houver uma linha a peca deve ser contada
+        
+            pontos += pt;
+            //Analise de qwirkle
+            if (pt == 6){
+                pontos += 6;
+            }
+            pt = 0;
+
+            //caminhando no sentido correto
+            i += s;
+
+            //codicioes de saida
+            if((i > lastMove[0]) && (i > lastMove[2]))
+                cont = 0;
+            if((i < lastMove[0]) && (i < lastMove[2]))
+                cont = 0;
+        }
+        //Análise da linha jogada
+        //Análise horizontal
+        l = centerL + lastMove[2];
+        c = centerC + lastMove[3];
+        pt += countConnect(board, l+1, c, 1);
+        pt += countConnect(board, l-1, c, -1);
+        if (pt != 0) pt++; //se houver uma linha a peca deve ser contada
+
+        pontos += pt;
+        //Analise de qwirkle
+        if (pt == 6){
+            pontos += 6;
+        }
+        pt = 0;
+
+        printf("Pontos dessa rodada: %d\n", pontos);
+        return pontos;
+    }
+    
+    return pontos;
+}

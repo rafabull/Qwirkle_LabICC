@@ -80,7 +80,7 @@ int main(){
             if(!strcmp(op[0], "sair"))
                 end = 0;
             if(!strcmp(op[0], "passar")){
-                
+                pontos[vez] += countPoints(board, centerL, centerC, lastMove);
                 reloadHand(hand[vez], pile);
                 for(i = 0; i < 4; i++)
                     lastMove[i] = 999; 

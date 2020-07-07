@@ -16,7 +16,7 @@ functions.o: functions.c
 	gcc -g -c functions.c 
 
 clean:
-	del main.o functions.o qwirckle.exe
+	del main.o functions.o qwirckle.exe a.exe
 
 run: a.exe
 	./a.exe

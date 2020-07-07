@@ -21,3 +21,4 @@ int checkHand(int *h, int pc);
 void removeFromHand(int pc, int *hand);
 void reloadHand(int *hand, int *pile);
 
+int countPoints(int **board, int centerL, int centerC, int *lastMove);
