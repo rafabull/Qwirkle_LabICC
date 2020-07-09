@@ -695,7 +695,6 @@ void reloadHand(int *hand, int *pile){
 
 //recebe cordenadas direto no formato da matriz
 int countConnect(int **board, int l, int c, int side){
-    printf("testando em l: %d e c: %d\n", l, c);
     if( board[l][c] == -1){
         return 0;
     }

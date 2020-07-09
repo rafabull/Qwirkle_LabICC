@@ -25,11 +25,13 @@ int main(){
     int *hand[nJog];
     for(i = 0; i < nJog; i++){
         hand[i] = getHand(pile);
-        pontos[i] = 0;  //inixializa os pontos com 0
+        pontos[i] = 0;  //inicializa os pontos com 0
     }
 
     int lastMove[4] = {999, 999, 999, 999};  //linha1 coluna1 liha2 coluna2
+    int vTrade = 1;
     
+
     //iniciando o jogo
     int vez = 0;
     while (end){
@@ -48,6 +50,7 @@ int main(){
         printf("\n");
 
         //Dividindo o comando digitado
+        int nTk = 0;
         char * token = strtok(str, " ");
         i = 0;
         while( token != NULL ) {
@@ -55,6 +58,7 @@ int main(){
             token = strtok(NULL, " ");
             i++;
         }
+        nTk = i;
 
         //Controle de ação a ser realizada
         if(!strcmp(op[0], "jogar")){
@@ -74,21 +78,33 @@ int main(){
             
         }else{
             if(!strcmp(op[0], "trocar")){
-                int pc = codePiece(op[1]);
-                tradePiece(pile, pc, hand[vez]);
+                if(vTrade){
+                    int pc;
+                    for(i = 1; i < nTk; i++){
+                        printf("code %s\n", op[i]);
+                        pc = codePiece(op[i]);
+                        tradePiece(pile, pc, hand[vez]);
+                    }
+                    vTrade = 0;
+                }else{
+                    printf("Voce ja realizou suas trocas esta rodada\n");
+                }
             }
             if(!strcmp(op[0], "sair"))
                 end = 0;
             if(!strcmp(op[0], "passar")){
                 pontos[vez] += countPoints(board, centerL, centerC, lastMove);
                 reloadHand(hand[vez], pile);
+
+                vTrade = 1;
+
                 for(i = 0; i < 4; i++)
                     lastMove[i] = 999; 
                 vez++;
                 if(vez >= nJog){
                     vez = 0;
                 }
-                //system("clear || cls"); //limpando a tela
+    
             }
         }
     }
