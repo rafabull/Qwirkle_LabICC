@@ -12,6 +12,55 @@ const char rColor[9] = "\033[0m";
 const char types[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
 const char colors[6] = {'1', '2', '3', '4', '5', '6'};
 
+
+//Exibe o menu e coleta informações dos jogadores
+char** menu(int *nJog){
+    //Imprimndo Qwirkle personalizado
+    printf(" ::::::::   :::       ::: ::::::::::: :::::::::  :::    ::: :::        ::::::::::\n");
+    printf(":+:    :+:  :+:       :+:     :+:     :+:    :+: :+:   :+:  :+:        :+:\n");
+    printf("+:+    +:+  +:+       +:+     +:+     +:+    +:+ +:+  +:+   +:+        +:+\n");
+    printf("+#+    +:+  +#+  +:+  +#+     +#+     +#++:++#:  +#++:++    +#+        +#++:++#\n");
+    printf("+#+  # +#+  +#+ +#+#+ +#+     +#+     +#+    +#+ +#+  +#+   +#+        +#+\n");
+    printf("#+#   +#+    #+#+# #+#+#      #+#     #+#    #+# #+#   #+#  #+#        #+#\n");
+    printf(" ###### ###   ###   ###   ########### ###    ### ###    ### ########## ##########\n\n");
+
+    int val = 0;
+    while(!val){
+        printf("Digite o numero de jogadores (2-4): ");
+        scanf("%d", nJog);
+        printf("\n");
+
+        if((*nJog < 2)||(*nJog > 4)){
+            printf("Numero inválido!\n");
+        }else{
+            val = 1;
+        }
+    }
+
+    char **jog = (char**) malloc(sizeof(char*) * (*nJog));
+    if (jog == NULL){
+        printf("Falha na alocacao!\n");
+        exit(0);
+    }else{
+        for(int l = 0; l < *nJog; l++){
+            jog[l] = (char *) malloc(sizeof(char)*(21));
+            if(jog[l] == NULL){
+                printf("Falha na alocacao!\n");
+                exit(0);
+            }
+        }
+    }
+
+    char nome[21];
+    for(int l = 0; l < *nJog; l++){
+            printf("Digite um nome para o jogador #%d (max = 20 caracteres): ", l+1);
+            scanf(" %s", nome);
+            strcpy(jog[l], nome);
+    }
+
+    return jog;
+}
+
 //Função para liberar o tabuleiro
 void freeBoard(int** board, int lines){
     int i;
@@ -223,7 +272,6 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
     }
     //verificando se esta grudado a uma peça caso não seja o movimento inicial
     int v1 = 1;
-    printf("lins %d, cols %d \n\n", lins, cols);
     if((lins != 1) || (cols != 1)){
         if(centerL + l - 1 >= 0)
             if(board[centerL + l - 1][centerC + c] != -1) v1 = 0;
@@ -476,7 +524,6 @@ int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int li
                     }
                 }
             }
-            printf("moves\n l1: %d c1:%d\n l2: %d c2:%d\n", lastMove[0], lastMove[1], lastMove[2], lastMove[3]);
             //inserindo no tabuleiro
             board[centerL + l][centerC + c] = pc;
             return 1;
@@ -599,54 +646,6 @@ void printHand(int *hand){
     printf("\n");
 }
 
-//Exibe o menu e coleta informações dos jogadores
-char** menu(int *nJog){
-    //Imprimndo Qwirkle personalizado
-    printf(" ::::::::   :::       ::: ::::::::::: :::::::::  :::    ::: :::        ::::::::::\n");
-    printf(":+:    :+:  :+:       :+:     :+:     :+:    :+: :+:   :+:  :+:        :+:\n");
-    printf("+:+    +:+  +:+       +:+     +:+     +:+    +:+ +:+  +:+   +:+        +:+\n");
-    printf("+#+    +:+  +#+  +:+  +#+     +#+     +#++:++#:  +#++:++    +#+        +#++:++#\n");
-    printf("+#+  # +#+  +#+ +#+#+ +#+     +#+     +#+    +#+ +#+  +#+   +#+        +#+\n");
-    printf("#+#   +#+    #+#+# #+#+#      #+#     #+#    #+# #+#   #+#  #+#        #+#\n");
-    printf(" ###### ###   ###   ###   ########### ###    ### ###    ### ########## ##########\n\n");
-
-    int val = 0;
-    while(!val){
-        printf("Digite o numero de jogadores (2-4): ");
-        scanf("%d", nJog);
-        printf("\n");
-
-        if((*nJog < 2)||(*nJog > 4)){
-            printf("Numero inválido!\n");
-        }else{
-            val = 1;
-        }
-    }
-
-    char **jog = (char**) malloc(sizeof(char*) * (*nJog));
-    if (jog == NULL){
-        printf("Falha na alocacao!\n");
-        exit(0);
-    }else{
-        for(int l = 0; l < *nJog; l++){
-            jog[l] = (char *) malloc(sizeof(char)*(21));
-            if(jog[l] == NULL){
-                printf("Falha na alocacao!\n");
-                exit(0);
-            }
-        }
-    }
-
-    char nome[21];
-    for(int l = 0; l < *nJog; l++){
-            printf("Digite um nome para o jogador #%d (max = 20 caracteres): ", l+1);
-            scanf(" %s", nome);
-            strcpy(jog[l], nome);
-    }
-
-    return jog;
-}
-
 //libera td memória alocada donâmicamente
 void freeAll(int **board, int boardLine, int *pile, int **hand,int nJog, char **nomeJog){
     freeBoard(board, boardLine);
@@ -684,13 +683,18 @@ void removeFromHand(int pc, int *hand){
     }
 }
 
-void reloadHand(int *hand, int *pile){
+int reloadHand(int *hand, int *pile, int nCompras){
+    int cont = 0;
     for(int i = 0; i < 7; i++){
         if(hand[i] == -1){
-            hand[i] = getPiece(pile);
+            cont ++;
+            if (nCompras + cont <= 108)
+                hand[i] = getPiece(pile);
+            else 
+                break;
         }
     }
-    
+    return cont;
 }
 
 //recebe cordenadas direto no formato da matriz
@@ -728,11 +732,10 @@ int countPoints(int **board, int centerL, int centerC, int *lastMove){
         l = centerL + lastMove[0];
         c = centerC + lastMove[1];
 
-        pt++; //A peca deve ser contada sempre
-
         //Análise Vertical
         pt += countConnect(board, l+1, c, 1);
         pt += countConnect(board, l-1, c, -1);
+        if (pt != 0) pt++; //se houver uma linha a peca deve ser contada
         pontos += pt;
         //Analise de qwirkle
         if (pt == 6){
@@ -743,6 +746,7 @@ int countPoints(int **board, int centerL, int centerC, int *lastMove){
         //Análise horizontal
         pt += countConnect(board, l, c+1, 2);
         pt += countConnect(board, l, c-1, -2);
+        if (pt != 0) pt++; //se houver uma linha a peca deve ser contada
         pontos += pt;
         //Analise de qwirkle
         if (pt == 6){
@@ -750,7 +754,9 @@ int countPoints(int **board, int centerL, int centerC, int *lastMove){
         }
         pt = 0;
 
-        printf("pontos Uma jogada\n");
+        if(pontos == 0)
+            pontos++; //Caso não exista nenhuma conexão com a peça
+    
         printf("Pontos dessa rodada: %d\n", pontos);
         return pontos;
     }
@@ -866,4 +872,15 @@ int countPoints(int **board, int centerL, int centerC, int *lastMove){
     }
     
     return pontos;
+}
+
+//Verificando se o jogador esvaziou sua mão
+int isHandEmpty(int *hand){
+    int res = 1;
+    for(int i = 0; i < 7; i++){
+        if(hand[i] != -1){
+            return 0;
+        }
+    }
+    return res;
 }

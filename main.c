@@ -30,7 +30,7 @@ int main(){
 
     int lastMove[4] = {999, 999, 999, 999};  //linha1 coluna1 liha2 coluna2
     int vTrade = 1;
-    
+    int nCompras = 7 * nJog;
 
     //iniciando o jogo
     int vez = 0;
@@ -71,6 +71,12 @@ int main(){
                 if(makeMove(board, pc, l, c, centerL, centerC, boardLine, boardCol, lastMove)){
                     removeFromHand(pc, hand[vez]);
                     board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
+                    if(nCompras == 108){
+                        if(isHandEmpty(hand[vez])){
+                            pontos[vez] += 6;
+                            end = 0;
+                        }
+                    }
                 }
             }else{
                 printf("Peca Invalida!\n");
@@ -81,7 +87,6 @@ int main(){
                 if(vTrade){
                     int pc;
                     for(i = 1; i < nTk; i++){
-                        printf("code %s\n", op[i]);
                         pc = codePiece(op[i]);
                         tradePiece(pile, pc, hand[vez]);
                     }
@@ -94,7 +99,8 @@ int main(){
                 end = 0;
             if(!strcmp(op[0], "passar")){
                 pontos[vez] += countPoints(board, centerL, centerC, lastMove);
-                reloadHand(hand[vez], pile);
+                if(nCompras <= 108)
+                    nCompras += reloadHand(hand[vez], pile, nCompras);
 
                 vTrade = 1;
 
@@ -108,7 +114,10 @@ int main(){
             }
         }
     }
-
+    printf("Fim de jogo!! \n Pontuacoes finais:\n");
+    for(i = 0; i < nJog; i++){
+        printf("Jogador %s: %d Pontos \n", nomeJog[i], pontos[i]);
+    }
     freeAll(board, boardLine, pile, hand, nJog, nomeJog);
     
     return 0;
