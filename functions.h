@@ -1,5 +1,5 @@
 
-char** menu(int *nJog, int *mode);
+char** menu(int *nJog, char *cMode);
 
 void freeBoard(int** board, int lines);
 int** makeBoard();
@@ -24,3 +24,7 @@ int reloadHand(int *hand, int *pile, int nCompras);
 
 int countPoints(int **board, int centerL, int centerC, int *lastMove);
 int isHandEmpty(int *hand);
+
+int checkPile(int *pile, int pc);
+int isAvaiable(int *hand, int *pile, int pc);
+void removeFromPile(int pilePos, int *pile);

@@ -14,7 +14,7 @@ const char colors[6] = {'1', '2', '3', '4', '5', '6'};
 
 
 //Exibe o menu e coleta informações dos jogadores
-char** menu(int *nJog, int *mode){
+char** menu(int *nJog, char *cMode){
     //Imprimndo Qwirkle personalizado
     printf(" ::::::::   :::       ::: ::::::::::: :::::::::  :::    ::: :::        ::::::::::\n");
     printf(":+:    :+:  :+:       :+:     :+:     :+:    :+: :+:   :+:  :+:        :+:\n");
@@ -61,11 +61,11 @@ char** menu(int *nJog, int *mode){
     val = 0;
     while(!val){
         printf("Cheat Mode? (S/N) ");
-        scanf(" %c", mode);
+        scanf(" %c", cMode);
         printf("\n");
-        *mode = toupper(*mode);
+        *cMode = toupper(*cMode);
 
-        if((*mode != 'S') && (*mode != 'N')){
+        if((*cMode != 'S') && (*cMode != 'N')){
             printf("Resposta invalida!\n");
         }else{
             val = 1;
@@ -896,4 +896,46 @@ int isHandEmpty(int *hand){
         }
     }
     return res;
+}
+
+//Procura a peça na pilha e retorna sua posicao, de 1 a 108
+int checkPile(int *pile, int pc){
+    int cont, e, i;
+    for(cont = 0; cont < 36; cont++){
+        //Comparando 3 posições no mesmo ciclo para maior velocidado
+        if(pile[cont] == pc){
+            return cont + 1;
+        }
+        if(pile[cont + 36] == pc){
+            return cont + 36 + 1 ;
+        }
+        if(pile[cont + 72] == pc){
+            return cont + 72 + 1 ;
+        }
+    }
+    return 0;
+}
+
+//Verifica se uma peça está disponível no cheat mode
+int isAvaiable(int *hand, int *pile, int pc){
+    if(!pc){                    //Verifica se a peça digtada é válida
+        printf("Peca Invalida!\n");
+        return 0;
+    }
+    if(checkHand(hand, pc)){    //Verifica se esta na mão do jogador
+        return -1;
+    }
+    int pilePos = checkPile(pile, pc);
+    if(pilePos){    //Verifica se a peça esta na pilha
+        return pilePos;           
+    }
+    printf("Peca nao disponvel!\n");
+    return 0;                   //Caso não esteja em nenhuma
+}
+
+//Remove a peça na posição pilePos-1 da pilha
+void removeFromPile(int pilePos, int *pile){
+    if((pilePos <= 108) && (pilePos > 0)){
+        pile[pilePos - 1] = -1;
+    }
 }
