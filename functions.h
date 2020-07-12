@@ -1,5 +1,5 @@
 
-char** menu(int *nJog);
+char** menu(int *nJog, int *mode);
 
 void freeBoard(int** board, int lines);
 int** makeBoard();

@@ -14,7 +14,7 @@ const char colors[6] = {'1', '2', '3', '4', '5', '6'};
 
 
 //Exibe o menu e coleta informações dos jogadores
-char** menu(int *nJog){
+char** menu(int *nJog, int *mode){
     //Imprimndo Qwirkle personalizado
     printf(" ::::::::   :::       ::: ::::::::::: :::::::::  :::    ::: :::        ::::::::::\n");
     printf(":+:    :+:  :+:       :+:     :+:     :+:    :+: :+:   :+:  :+:        :+:\n");
@@ -31,7 +31,7 @@ char** menu(int *nJog){
         printf("\n");
 
         if((*nJog < 2)||(*nJog > 4)){
-            printf("Numero inválido!\n");
+            printf("Numero invalido!\n");
         }else{
             val = 1;
         }
@@ -56,6 +56,20 @@ char** menu(int *nJog){
             printf("Digite um nome para o jogador #%d (max = 20 caracteres): ", l+1);
             scanf(" %s", nome);
             strcpy(jog[l], nome);
+    }
+
+    val = 0;
+    while(!val){
+        printf("Cheat Mode? (S/N) ");
+        scanf(" %c", mode);
+        printf("\n");
+        *mode = toupper(*mode);
+
+        if((*mode != 'S') && (*mode != 'N')){
+            printf("Resposta invalida!\n");
+        }else{
+            val = 1;
+        }
     }
 
     return jog;
@@ -622,12 +636,12 @@ void tradePiece(int *pile, int pc, int*hand){
 //recolhe as 7 peças para niciar uma "mão"
 int* getHand(int *pile){
     int i;
-    int *h = (int*) malloc(sizeof(int)*7);
+    int *h = (int*) malloc(sizeof(int)*6);
     if(h == NULL){
         printf("Falha na Alocação!\n");
         exit(0);
     }
-    for(i = 0; i < 7; i++){
+    for(i = 0; i < 6; i++){
         h[i] = getPiece(pile);  //inserindo nova peça na mão
     }
     return h;
@@ -636,7 +650,7 @@ int* getHand(int *pile){
 //imprime a "mão"
 void printHand(int *hand){
     int i;
-    for(i = 0; i < 7; i++){
+    for(i = 0; i < 6; i++){
         if(hand[i] != -1){
             int ty = hand[i] / 10;
             int cor = hand[i] - ty*10;
@@ -650,7 +664,6 @@ void printHand(int *hand){
 void freeAll(int **board, int boardLine, int *pile, int **hand,int nJog, char **nomeJog){
     freeBoard(board, boardLine);
     free(pile);
-    free(*hand);
     for(int i = 0; i < nJog; i++){
         free(hand[i]);
         free(nomeJog[i]);
@@ -665,7 +678,7 @@ int checkHand(int *h, int pc){
     }
 
     //verificando se a peca esta na mão do jogador
-    for(int i = 0; i < 7; i++){
+    for(int i = 0; i < 6; i++){
         if(pc == h[i]){
             return 1;
         }
@@ -675,7 +688,7 @@ int checkHand(int *h, int pc){
 }
 
 void removeFromHand(int pc, int *hand){
-    for(int i = 0; i < 7; i++){
+    for(int i = 0; i < 6; i++){
         if(hand[i] == pc){
             hand[i] = -1;
             break;
@@ -685,7 +698,7 @@ void removeFromHand(int pc, int *hand){
 
 int reloadHand(int *hand, int *pile, int nCompras){
     int cont = 0;
-    for(int i = 0; i < 7; i++){
+    for(int i = 0; i < 6; i++){
         if(hand[i] == -1){
             cont ++;
             if (nCompras + cont <= 108)
@@ -877,7 +890,7 @@ int countPoints(int **board, int centerL, int centerC, int *lastMove){
 //Verificando se o jogador esvaziou sua mão
 int isHandEmpty(int *hand){
     int res = 1;
-    for(int i = 0; i < 7; i++){
+    for(int i = 0; i < 6; i++){
         if(hand[i] != -1){
             return 0;
         }

@@ -16,8 +16,8 @@ int main(){
     board = makeBoard(); //criando o tabuleiro
     pile = makePile();   //Criando o "saco" de peças restantes
 
-    int nJog;
-    char **nomeJog = menu(&nJog);   //Menu usado para configurações de jogadores
+    int nJog, mode;
+    char **nomeJog = menu(&nJog, &mode);   //Menu usado para configurações de jogadores
     fflush(stdin);
     int pontos[nJog];
 
@@ -28,9 +28,9 @@ int main(){
         pontos[i] = 0;  //inicializa os pontos com 0
     }
 
-    int lastMove[4] = {999, 999, 999, 999};  //linha1 coluna1 liha2 coluna2
-    int vTrade = 1;
-    int nCompras = 7 * nJog;
+    int lastMove[4] = {999, 999, 999, 999}; //Variavel para armazenar os mov da rodada (linha1 coluna1 liha2 coluna2)  
+    int vTrade = 1;                         //Variavel para verificar se a troca da rodada já fo feita
+    int nCompras = 6 * nJog;                //Variável para armazenar quantas peças já foram tiradas do "saco"
 
     //iniciando o jogo
     int vez = 0;
