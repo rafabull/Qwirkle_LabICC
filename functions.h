@@ -27,4 +27,5 @@ int isHandEmpty(int *hand);
 
 int checkPile(int *pile, int pc);
 int isAvaiable(int *hand, int *pile, int pc);
-void removeFromPile(int pilePos, int *pile);
+int removeFromPile(int pilePos, int *pile);
+

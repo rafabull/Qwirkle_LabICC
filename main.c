@@ -11,7 +11,7 @@ int main(){
     int boardCol = 1;
     int centerL = 0, centerC = 0;
     int **board, *pile;
-    int i = 0, cont = 0, end = 1;
+    int end = 1;
 
     board = makeBoard(); //criando o tabuleiro
     pile = makePile();   //Criando o "saco" de peças restantes
@@ -24,7 +24,7 @@ int main(){
 
     //armazenado a primeira mão de cada jogador
     int *hand[nJog];
-    for(i = 0; i < nJog; i++){
+    for(int i = 0; i < nJog; i++){
         hand[i] = getHand(pile);
         pontos[i] = 0;  //inicializa os pontos com 0
     }
@@ -35,10 +35,20 @@ int main(){
 
     //iniciando o jogo
     int vez = 0;
+    int i, cont = 0;    //contadores
+    char pause;
     while (end){
-        printf("\n");
-        system("pause");
+        if(nCompras >= 108){
+            if(isHandEmpty(hand[vez])){
+                pontos[vez] += 6;
+                end = 0;
+            }
+        }
+
+        puts("Aperte enter para continuar...");
+        pause = getchar(); 
         system("clear || cls");
+
         printBoard(board, boardLine, boardCol, centerL, centerC);
 
         //imprimindo dados da vez
@@ -79,12 +89,6 @@ int main(){
                         removeFromHand(pc, hand[vez]);
                         board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
                         printf("Jogada Realizada!\n");
-                        if(nCompras == 108){
-                            if(isHandEmpty(hand[vez])){
-                                pontos[vez] += 6;
-                                end = 0;
-                            }
-                        }
                     }
                 }else{
                     printf("Peca Invalida!\n");
@@ -94,31 +98,32 @@ int main(){
                 int pilePos;
                 pilePos = isAvaiable(hand[vez], pile, pc);
                 if(pilePos != 0){
-                    makeMove(board, pc, l, c, centerL, centerC, boardLine, boardCol, lastMove);
-                    removeFromHand(pc, hand[vez]);  //tenta remover da mão, se n existir nela nd ocorre
-                    removeFromPile(pilePos, pile);  //remove se pilePos estiver de 1 a 108
-                    board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
-                    printf("Jogada Realizada!\n");
-                    if(nCompras == 108){
-                        if(isHandEmpty(hand[vez])){
-                            pontos[vez] += 6;
-                            end = 0;
+                    if(makeMove(board, pc, l, c, centerL, centerC, boardLine, boardCol, lastMove)){
+                        removeFromHand(pc, hand[vez]);  //tenta remover da mão, se n existir nela nd ocorre
+                        if(removeFromPile(pilePos, pile)){  //remove se pilePos estiver de 1 a 108
+                            nCompras ++;                    //caso uma peça seja removida da pilha o numero de compras aumenta
                         }
+                        board = expandBoard(board, &boardLine, &boardCol, &centerL, &centerC);
+                        printf("Jogada Realizada!\n");
                     }
                 }
             }
             
         }else{
             if(!strcmp(op[0], "trocar")){
-                if(vTrade){
-                    int pc;
-                    for(i = 1; i < nTk; i++){
-                        pc = codePiece(op[i]);
-                        tradePiece(pile, pc, hand[vez]);
+                if(nCompras < 108){
+                    if(vTrade){
+                        int pc;
+                        for(i = 1; i < nTk; i++){
+                            pc = codePiece(op[i]);
+                            tradePiece(pile, pc, hand[vez]);
+                        }
+                        vTrade = 0;
+                    }else{
+                        printf("Voce ja realizou suas trocas esta rodada\n");
                     }
-                    vTrade = 0;
                 }else{
-                    printf("Voce ja realizou suas trocas esta rodada\n");
+                    printf("Nao ha mais pecas para trocar\n");
                 }
             }else{
                 if(!strcmp(op[0], "passar")){
@@ -154,7 +159,8 @@ int main(){
     
     freeAll(board, boardLine, pile, hand, nJog, nomeJog);
 
-    system("pause");
+    puts("Aperte enter para terminar...");
+    pause = getchar(); 
     
     return 0;
 }

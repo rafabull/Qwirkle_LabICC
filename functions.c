@@ -116,7 +116,7 @@ void printBoard(int **board, int lins, int cols, int cLin, int cCol){
                 if((c-cCol >= 0) && (c-cCol < 10))
                     printf("   %d ", c-cCol);
                 else{
-                    if (c-cLin > -10)
+                    if (c-cCol > -10)
                         printf("  %d ", c-cCol);
                     else
                         printf(" %d ", c-cCol);
@@ -271,12 +271,12 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
 
     //Verificando se a linha é valida
     if((centerL + l < 0) || (centerL + l >= lins)){
-        printf("Linha inválida\n");
+        printf("Linha invalida\n");
         return 0;
     }
     //verificando se a coluna é valida
     if((centerC + c < 0) || (centerC + c >= cols)){
-        printf("Coluna inválida\n");
+        printf("Coluna invalida\n");
         return 0;
     }
     //verfcando se a posição está vazia
@@ -307,7 +307,6 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
     int side, elL = -1, elC = -1;
     //verificando em cima
     if(centerL + l - 1 >= 0){
-        puts("1");
         side = board[centerL + l - 1][centerC + c];
         if(side != -1){
             if(side/10 == pc/10){
@@ -485,7 +484,6 @@ int validateMove(int** board, int pc, int l, int c, int centerL, int centerC, in
 //Função para realizar o movimento
 int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int lins, int cols, int *lastMove){
     int i, val = 0;
-
     if(pc){
         if(validateMove(board, pc, l, c, centerL, centerC, lins, cols, lastMove)){ //verificar se o movimento é válido
             //adicionar a ultima jogada
@@ -499,45 +497,52 @@ int makeMove(int** board, int pc, int l, int c, int centerL, int centerC, int li
                 }else{
                     //manter as fronteiras corretas
                     //fileiras verticais
-                    if(lastMove[0] > lastMove[2]){
-                        if(l > lastMove[0]){
-                            lastMove[0] = l;
-                            lastMove[1] = c;
+                    if((c == lastMove[1]) && (c == lastMove[3])){
+                        if(lastMove[0] > lastMove[2]){
+                            if(l > lastMove[0]){
+                                lastMove[0] = l;
+                                lastMove[1] = c;
+                            }else{
+                                lastMove[2] = l;
+                                lastMove[3] = c;
+                            }
                         }else{
-                            lastMove[2] = l;
-                            lastMove[3] = c;
-                        }
-                    }
-                    if(lastMove[0] < lastMove[2]){
-                        if(l < lastMove[0]){
-                            lastMove[0] = l;
-                            lastMove[1] = c;
-                        }else{
-                            lastMove[2] = l;
-                            lastMove[3] = c;
+                            if(lastMove[0] < lastMove[2]){
+                                if(l < lastMove[0]){
+                                    lastMove[0] = l;
+                                    lastMove[1] = c;
+                                }else{
+                                    lastMove[2] = l;
+                                    lastMove[3] = c;
+                                }
+                            }
                         }
                     }
                     //fileiras horizontais
-                    if(lastMove[1] > lastMove[3]){
-                        if(l > lastMove[0]){
-                            lastMove[0] = l;
-                            lastMove[1] = c;
+                    if((l == lastMove[0]) && (l == lastMove[2])){
+                        if(lastMove[1] > lastMove[3]){
+                            if(c > lastMove[1]){
+                                lastMove[0] = l;
+                                lastMove[1] = c;
+                            }else{
+                                lastMove[2] = l;
+                                lastMove[3] = c;
+                            }
                         }else{
-                            lastMove[2] = l;
-                            lastMove[3] = c;
-                        }
-                    }
-                    if(lastMove[1] < lastMove[3]){
-                        if(l < lastMove[1]){
-                            lastMove[0] = l;
-                            lastMove[1] = c;
-                        }else{
-                            lastMove[2] = l;
-                            lastMove[3] = c;
+                            if(lastMove[1] < lastMove[3]){
+                                if(c < lastMove[1]){
+                                    lastMove[0] = l;
+                                    lastMove[1] = c;
+                                }else{
+                                    lastMove[2] = l;
+                                    lastMove[3] = c;
+                                }
+                            }
                         }
                     }
                 }
             }
+
             //inserindo no tabuleiro
             board[centerL + l][centerC + c] = pc;
             return 1;
@@ -608,29 +613,33 @@ void tradePiece(int *pile, int pc, int*hand){
     int pos = 0;
     //Adicionando nova peça a mão do jogador
     int v = 1;
-    while (pos < 7){
-        if(hand[pos] == pc){
-            hand[pos] = nPc;
-            v = 0;
-            break;
-        }else{
-            pos ++;
-        }
-    }
-    if(v){
-        printf("Voce nao possui essa peca! \n");
+    if (nPc == 0){
+        printf("Nao foi possivel tocar a peca, nao ha mais pecas disponiveis");
     }else{
-        pos = 0;
-        //insere a peça a ser trocada na pimeira posição vazia encontrada
-        while (pos < 108){
-            if (pile[pos] == -1){
+        while (pos < 7){
+            if(hand[pos] == pc){
+                hand[pos] = nPc;
+                v = 0;
                 break;
             }else{
-                pos++;
+                pos ++;
             }
         }
-        pile[pos] = pc;
-    }   
+        if(v){
+            printf("Voce nao possui essa peca! \n");
+        }else{
+            pos = 0;
+            //insere a peça a ser trocada na pimeira posição vazia encontrada
+            while (pos < 108){
+                if (pile[pos] == -1){
+                    pile[pos] = pc;
+                    break;
+                }else{
+                    pos++;
+                }
+            }
+        }   
+    }
 }
 
 //recolhe as 7 peças para niciar uma "mão"
@@ -889,13 +898,12 @@ int countPoints(int **board, int centerL, int centerC, int *lastMove){
 
 //Verificando se o jogador esvaziou sua mão
 int isHandEmpty(int *hand){
-    int res = 1;
     for(int i = 0; i < 6; i++){
         if(hand[i] != -1){
             return 0;
         }
     }
-    return res;
+    return 1;
 }
 
 //Procura a peça na pilha e retorna sua posicao, de 1 a 108
@@ -934,8 +942,10 @@ int isAvaiable(int *hand, int *pile, int pc){
 }
 
 //Remove a peça na posição pilePos-1 da pilha
-void removeFromPile(int pilePos, int *pile){
+int removeFromPile(int pilePos, int *pile){
     if((pilePos <= 108) && (pilePos > 0)){
         pile[pilePos - 1] = -1;
+        return 1;
     }
+    return 0;
 }
